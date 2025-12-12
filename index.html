@@ -8,7 +8,7 @@
   :root{
     --bg1:#000;
     --bg2:#071428;
-    --card:#0b0b0d;
+    --panel:#0b0b0d;
     --muted:#9aa3ad;
     --accent:#ff6b6b;
     --white:#ffffff;
@@ -81,7 +81,6 @@
     margin:-18px -18px 12px -18px;
     position:relative;
   }
-  /* slight pattern line */
   .logo-img{ width:160px; height:auto; display:block; filter: drop-shadow(0 6px 18px rgba(0,0,0,0.6)); }
 
   .top{
@@ -97,7 +96,7 @@
   .meta{ color:var(--muted); font-size:12px; margin-top:4px; }
 
   .big-placeholder{
-    width:220px; height:220px; background:#fff; border-radius:12px; display:block;
+    width:220px; height:220px; background:#fff; border-radius:18px; display:block;
     margin:18px auto; box-shadow: 0 10px 20px rgba(0,0,0,0.4);
   }
 
@@ -135,8 +134,8 @@
     margin-top:22px;
     gap:12px;
   }
-  .bottom-logo{ width:110px; height:auto; opacity:0.95; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.6)); }
-  .hashtag{ font-weight:800; font-size:20px; color:#fff; }
+  .bottom-logo{ width:140px; height:auto; opacity:0.95; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.6)); }
+  .hashtag{ font-weight:800; font-size:28px; color:#fff; letter-spacing:0.6px; }
 
   @media (max-width:920px){
     .layout{ grid-template-columns:1fr; }
@@ -206,7 +205,9 @@
   <div class="preview-wrap">
     <div class="ticket" id="ticketPreview" role="presentation">
       <div class="header" id="headerArea">
-        <img id="logoImg" class="logo-img" src="https://b.zmtcdn.com/data/district/web_assets/district-logo-white.png" alt="district logo" crossorigin="anonymous" />
+        <!-- TOP compact logo (embedded SVG data URI - compact "district" with subtle glow) -->
+        <img id="logoImg" class="logo-img" alt="district logo"
+             src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="420" height="90" viewBox="0 0 420 90"><defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="420" height="90" fill="none"/><text x="50%" y="60%" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="46" fill="%23ffffff" filter="url(%23g)">district</text></svg>' />
       </div>
 
       <div class="top">
@@ -243,7 +244,9 @@
       <div class="booking" id="pvBooking">Booking ID: -</div>
 
       <div class="bottom-bar">
-        <img id="bottomLogo" class="bottom-logo" src="https://b.zmtcdn.com/data/district/web_assets/district-logo-white.png" alt="district" crossorigin="anonymous" />
+        <!-- BOTTOM full logo (embedded SVG data URI: district + BY ZOMATO) -->
+        <img id="bottomLogo" class="bottom-logo" alt="district bottom logo"
+          src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="520" height="120" viewBox="0 0 520 120"><rect width="100%" height="100%" fill="none"/><text x="10" y="46" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="42" fill="%23ffffff">district</text><text x="12" y="86" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="14" fill="%23ffffff">BY ZOMATO</text></svg>' />
         <div class="hashtag">#SeeYouThere</div>
       </div>
 
@@ -384,31 +387,26 @@
     ctx.fillStyle = '#14121a';
     roundRect(ctx, pad/2 + 8, pad/2 + 8, W - pad - 16, headerH, 20, true, false);
 
-    // draw logo (attempt external - fallback to text)
-    const logoUrl = 'https://b.zmtcdn.com/data/district/web_assets/district-logo-white.png';
-    const logo = new Image();
-    let logoDrawn = false;
-    logo.crossOrigin = 'anonymous';
-    logo.onload = function(){
+    // draw TOP embedded logo (embedded SVG image URI)
+    const topLogo = new Image();
+    topLogo.onload = function(){
       const logoW = 420;
-      const logoH = Math.round((logo.height/logo.width)*logoW);
-      ctx.drawImage(logo, (W - logoW)/2, pad/2 + 24, logoW, logoH);
-      logoDrawn = true;
+      const logoH = Math.round(topLogo.height/topLogo.width*logoW);
+      ctx.drawImage(topLogo, (W - logoW)/2, pad/2 + 24, logoW, logoH);
+      // continue drawing
       drawMain();
     };
-    logo.onerror = function(){
-      // fallback - text logo
+    topLogo.onerror = function(){
+      // fallback text
       ctx.fillStyle = '#fff';
       ctx.font = 'bold 48px Arial';
       ctx.textAlign = 'center';
       ctx.fillText('district', W/2, pad/2 + 80);
-      ctx.font = '16px Arial';
-      ctx.fillText('BY ZOMATO', W/2, pad/2 + 110);
       drawMain();
     };
-    logo.src = logoUrl;
+    // compact top SVG (must match the one in the page)
+    topLogo.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="420" height="90" viewBox="0 0 420 90"><defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="420" height="90" fill="none"/><text x="50%" y="60%" text-anchor="middle" font-family=\'Inter, Arial, sans-serif\' font-weight="800" font-size="46" fill=\'%23ffffff\' filter="url(%23g)">district</text></svg>';
 
-    // main draw function that executes after logo (or fallback) finishes
     function drawMain(){
       // poster area
       const posterW = 260, posterH = 380;
@@ -417,7 +415,6 @@
 
       if(posterDataUrl){
         const img = new Image();
-        img.crossOrigin = 'anonymous';
         img.onload = function(){
           const ratio = Math.max(posterW / img.width, posterH / img.height);
           const sw = posterW / ratio, sh = posterH / ratio;
@@ -469,6 +466,7 @@
 
       // screen & seat under placeholder
       ctx.fillStyle = '#bdbdbd'; ctx.font = '18px Arial';
+      ctx.textAlign = 'center';
       ctx.fillText('SCREEN', W/2, qy + qsize + 60);
       ctx.fillStyle = '#fff'; ctx.font = '22px Arial';
       ctx.fillText(pvScreen.textContent, W/2, qy + qsize + 100);
@@ -490,29 +488,32 @@
 
       // booking id
       ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '16px Arial';
-      ctx.fillText(pvBooking.textContent, W/2, H - pad - 80);
+      ctx.textAlign = 'center';
+      ctx.fillText(pvBooking.textContent, W/2, H - pad - 160);
 
-      // bottom logo + hashtag (try to draw logo again small)
+      // bottom logo + hashtag (draw embedded bottom logo)
       const bottomLogo = new Image();
-      bottomLogo.crossOrigin = 'anonymous';
       bottomLogo.onload = function(){
-        const lw = 180, lh = Math.round(bottomLogo.height/bottomLogo.width*lw);
-        ctx.drawImage(bottomLogo, pad + 30, H - pad - lh - 10, lw, lh);
+        const lw = 220, lh = Math.round(bottomLogo.height/bottomLogo.width*lw);
+        ctx.drawImage(bottomLogo, pad + 30, H - pad - lh - 20, lw, lh);
         // hashtag
-        ctx.font = 'bold 36px Arial'; ctx.fillStyle = '#fff';
-        ctx.fillText('#SeeYouThere', W - pad - 280, H - pad - 30);
+        ctx.font = 'bold 42px Arial'; ctx.fillStyle = '#fff';
+        ctx.textAlign = 'right';
+        ctx.fillText('#SeeYouThere', W - pad - 30, H - pad - 40);
         // save
         finish();
       };
       bottomLogo.onerror = function(){
         // fallback text logo
         ctx.font = 'bold 28px Arial'; ctx.fillStyle = '#fff';
+        ctx.textAlign = 'left';
         ctx.fillText('district', pad + 30, H - pad - 40);
-        ctx.font = 'bold 36px Arial'; ctx.fillStyle = '#fff';
-        ctx.fillText('#SeeYouThere', W - pad - 280, H - pad - 30);
+        ctx.font = 'bold 42px Arial'; ctx.fillStyle = '#fff';
+        ctx.textAlign = 'right';
+        ctx.fillText('#SeeYouThere', W - pad - 30, H - pad - 40);
         finish();
       };
-      bottomLogo.src = 'https://b.zmtcdn.com/data/district/web_assets/district-logo-white.png';
+      bottomLogo.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="520" height="120" viewBox="0 0 520 120"><rect width="100%" height="100%" fill="none"/><text x="10" y="46" font-family=\'Inter, Arial, sans-serif\' font-weight="800" font-size="42" fill=\'%23ffffff\'>district</text><text x="12" y="86" font-family=\'Inter, Arial, sans-serif\' font-weight="700" font-size="14" fill=\'%23ffffff\'>BY ZOMATO</text></svg>';
     }
 
     function finish(){
@@ -538,6 +539,7 @@
       if(stroke) ctx.stroke();
     }
     function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+      ctx.textAlign = 'left';
       const words = text.split(' ');
       let line = '';
       for(let n=0;n<words.length;n++){
