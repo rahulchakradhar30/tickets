@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>District-style Ticket — Generator (No QR)</title>
+<title>District-style Ticket Generator (No QR)</title>
 <style>
   :root{
     --bg1:#000;
@@ -30,20 +30,20 @@
 
   .layout{
     width:100%;
-    max-width:1100px;
+    max-width:1180px;
     display:grid;
-    grid-template-columns:1fr 480px;
-    gap:26px;
+    grid-template-columns:1fr 520px;
+    gap:28px;
   }
 
   .panel{
     background: linear-gradient(180deg,#07101a,#07111b);
     border-radius:12px;
-    padding:18px;
+    padding:20px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.6);
   }
   h2{ margin:0 0 6px; font-size:20px; color:#e9eef6; }
-  p.hint{ color:var(--muted); margin:6px 0 12px; font-size:13px; }
+  .hint{ color:var(--muted); margin:6px 0 12px; font-size:13px; }
 
   label{ display:block; font-size:13px; color:var(--muted); margin-top:12px; margin-bottom:6px; }
   input[type="text"], input[type="date"], input[type="time"], input[type="file"]{
@@ -66,7 +66,7 @@
   /* preview ticket */
   .preview-wrap{ display:flex; align-items:center; justify-content:center; }
   .ticket{
-    width:420px; background:linear-gradient(180deg,#0a0a0b,#0b0b0d); border-radius:16px; padding:18px; box-shadow:0 18px 40px rgba(0,0,0,0.6);
+    width:420px; background:linear-gradient(180deg,#0a0a0b,#0b0b0d); border-radius:20px; padding:18px; box-shadow:0 18px 40px rgba(0,0,0,0.6);
     color:#fff; position:relative; overflow:hidden; font-size:14px;
   }
 
@@ -74,7 +74,7 @@
   .ticket .header{
     height:86px;
     background: linear-gradient(180deg,#14121a,#0b0b0d);
-    border-radius:10px;
+    border-radius:12px;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -87,13 +87,13 @@
     display:flex; gap:12px; align-items:center;
   }
   .poster{
-    width:60px; height:86px; border-radius:6px; background:linear-gradient(180deg,#222,#111);
-    overflow:hidden; flex:0 0 60px; display:flex; align-items:center; justify-content:center;
+    width:58px; height:86px; border-radius:6px; background:linear-gradient(180deg,#222,#111);
+    overflow:hidden; flex:0 0 58px; display:flex; align-items:center; justify-content:center; border:4px solid rgba(255,255,255,0.06);
   }
   .poster img{ width:100%; height:100%; object-fit:cover; display:block; }
 
-  .title{ font-weight:800; font-size:16px; color:#fff; }
-  .meta{ color:var(--muted); font-size:12px; margin-top:4px; }
+  .title{ font-weight:800; font-size:18px; color:#fff; line-height:1.05; }
+  .meta{ color:var(--muted); font-size:12px; margin-top:6px; }
 
   .big-placeholder{
     width:220px; height:220px; background:#fff; border-radius:18px; display:block;
@@ -136,6 +136,9 @@
   }
   .bottom-logo{ width:140px; height:auto; opacity:0.95; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.6)); }
   .hashtag{ font-weight:800; font-size:28px; color:#fff; letter-spacing:0.6px; }
+
+  .controls{ display:flex; gap:10px; margin-top:12px; align-items:center; flex-wrap:wrap; }
+  .select{ padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:#fff; }
 
   @media (max-width:920px){
     .layout{ grid-template-columns:1fr; }
@@ -198,25 +201,36 @@
       <button class="btn ghost" onclick="resetAll()">Reset</button>
     </div>
 
-    <p class="small" style="margin-top:12px;color:var(--muted)">After preview, click <strong>Download Ticket</strong> on the right to save the full PNG. Then paste QR using PicsArt into the white square placeholder.</p>
+    <div style="margin-top:14px;">
+      <label>Export Mode</label>
+      <div class="controls">
+        <select id="exportMode" class="select">
+          <option value="standard">Standard (1600px height)</option>
+          <option value="district">District Original (720×1280)</option>
+        </select>
+        <button class="btn primary" onclick="downloadTicketFromUI()">Download Ticket</button>
+      </div>
+    </div>
+
+    <p class="small" style="margin-top:12px;color:var(--muted)">After preview, click <strong>Download Ticket</strong> to save. Then paste QR using PicsArt into the white square placeholder.</p>
   </div>
 
   <!-- Right: preview -->
   <div class="preview-wrap">
-    <div class="ticket" id="ticketPreview" role="presentation">
+    <div class="ticket" id="ticketPreview" role="presentation" aria-label="Ticket preview">
       <div class="header" id="headerArea">
-        <!-- TOP compact logo (embedded SVG data URI - compact "district" with subtle glow) -->
+        <!-- TOP compact logo (glowing district) -->
         <img id="logoImg" class="logo-img" alt="district logo"
-             src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="420" height="90" viewBox="0 0 420 90"><defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="420" height="90" fill="none"/><text x="50%" y="60%" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="46" fill="%23ffffff" filter="url(%23g)">district</text></svg>' />
+             src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="420" height="90" viewBox="0 0 420 90"><defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="420" height="90" fill="none"/><text x="50%" y="60%" text-anchor="middle" font-family=\"Inter, Arial, sans-serif\" font-weight=\"800\" font-size=\"46\" fill=\"%23ffffff\" filter=\"url(%23g)\">district</text></svg>' />
       </div>
 
       <div class="top">
         <div class="poster" id="posterPreview"><img id="posterImg" src="" alt="poster" style="display:none"></div>
-        <div style="flex:1">
+        <div style="flex:1; padding-right:8px">
           <div class="title" id="pvTitle">Movie Title</div>
           <div class="meta" id="pvMeta">Telugu | 2D</div>
         </div>
-        <div style="text-align:right">
+        <div style="text-align:right; width:86px;">
           <div id="pvDate">Date</div>
           <div class="meta" id="pvTime">Time</div>
         </div>
@@ -244,20 +258,18 @@
       <div class="booking" id="pvBooking">Booking ID: -</div>
 
       <div class="bottom-bar">
-        <!-- BOTTOM full logo (embedded SVG data URI: district + BY ZOMATO) -->
-        <img id="bottomLogo" class="bottom-logo" alt="district bottom logo"
-          src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="520" height="120" viewBox="0 0 520 120"><rect width="100%" height="100%" fill="none"/><text x="10" y="46" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="42" fill="%23ffffff">district</text><text x="12" y="86" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="14" fill="%23ffffff">BY ZOMATO</text></svg>' />
+        <!-- bottom logo (your uploaded PNG raw link) -->
+        <img id="bottomLogo" class="bottom-logo" alt="district" src="https://github.com/rahulchakradhar30/tickets/blob/main/brand-logo.png?raw=true" />
         <div class="hashtag">#SeeYouThere</div>
       </div>
 
-      <a id="downloadTicketBtn" class="download" href="#" style="display:block;margin-top:14px;text-decoration:none;color:#fff;background:linear-gradient(90deg,#2db04b,#178f2f);padding:10px;border-radius:8px;text-align:center;font-weight:800;" onclick="downloadTicket(event)">Download Ticket</a>
     </div>
   </div>
 </div>
 
 <script>
 (function(){
-  // elements
+  // Elements
   const posterFile = document.getElementById('posterFile');
   const posterImg = document.getElementById('posterImg');
   const posterPreview = document.getElementById('posterPreview');
@@ -271,6 +283,9 @@
   const pvTheatre = document.getElementById('pvTheatre');
   const pvAddress = document.getElementById('pvAddress');
   const pvBooking = document.getElementById('pvBooking');
+
+  const bigPlaceholder = document.getElementById('qrPlaceholder');
+  const headerArea = document.getElementById('headerArea');
 
   // defaults
   function setDefaults(){
@@ -302,7 +317,7 @@
     return 'BK-' + Date.now().toString().slice(-10);
   }
 
-  // generate preview (no QR generation)
+  // preview generator
   window.generatePreview = function(){
     const movieName = document.getElementById('movieName').value.trim() || 'Movie Title';
     const movieDate = document.getElementById('movieDate').value;
@@ -317,7 +332,8 @@
     pvMeta.textContent = lang;
     try{
       const dObj = new Date(movieDate + 'T' + movieTime);
-      pvDate.textContent = dObj.toLocaleDateString(undefined,{weekday:'short', day:'numeric', month:'short'});
+      const opts = { weekday: 'short', day: 'numeric', month: 'short' };
+      pvDate.textContent = dObj.toLocaleDateString(undefined, opts);
       pvTime.textContent = new Date('1970-01-01T' + movieTime).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
     }catch(e){
       pvDate.textContent = movieDate || 'Date';
@@ -363,169 +379,186 @@
     pvBooking.textContent = 'Booking ID: -';
   };
 
-  // download full ticket PNG (no QR inside — only white placeholder)
-  window.downloadTicket = function(ev){
-    ev && ev.preventDefault && ev.preventDefault();
-
-    // create offscreen canvas
-    const W = 1000, H = 1600;
+  // Download helper: draws the ticket card to canvas sized W x H and triggers download
+  function buildAndDownload(W, H, filename){
     const off = document.createElement('canvas');
     off.width = W; off.height = H;
     const ctx = off.getContext('2d');
 
-    // background
-    ctx.fillStyle = '#060609';
+    // background for card shadow area
+    ctx.fillStyle = '#000';
     ctx.fillRect(0,0,W,H);
 
-    // inner card
-    const pad = 64;
+    // card area (we'll center a card with rounded corners)
+    const cardW = Math.round(W * 0.84); // width relative
+    const cardH = Math.round(H * 0.86);
+    const cx = Math.round((W - cardW)/2);
+    const cy = Math.round((H - cardH)/2);
+
+    // Draw rounded card background
     ctx.fillStyle = '#0f1113';
-    roundRect(ctx, pad/2, pad/2, W - pad, H - pad, 32, true, false);
+    roundRect(ctx, cx, cy, cardW, cardH, Math.round(cardW*0.03), true, false);
 
-    // header pattern (top) — draw darker rectangle
-    const headerH = 160;
+    // header area height (proportional)
+    const headerH = Math.round(cardH * 0.12);
+    const innerPad = Math.round(cardW * 0.05);
+
+    // header rectangle (darker)
     ctx.fillStyle = '#14121a';
-    roundRect(ctx, pad/2 + 8, pad/2 + 8, W - pad - 16, headerH, 20, true, false);
+    roundRect(ctx, cx + innerPad/2, cy + innerPad/2, cardW - innerPad, headerH, Math.round(cardW*0.02), true, false);
 
-    // draw TOP embedded logo (embedded SVG image URI)
+    // draw top compact glowing logo (embedded SVG URI)
     const topLogo = new Image();
+    topLogo.crossOrigin = 'anonymous';
     topLogo.onload = function(){
-      const logoW = 420;
-      const logoH = Math.round(topLogo.height/topLogo.width*logoW);
-      ctx.drawImage(topLogo, (W - logoW)/2, pad/2 + 24, logoW, logoH);
-      // continue drawing
-      drawMain();
+      const logoW = Math.round(cardW * 0.42);
+      const logoH = Math.round(topLogo.height/topLogo.width * logoW);
+      ctx.drawImage(topLogo, cx + (cardW - logoW)/2, cy + innerPad/2 + Math.round((headerH - logoH)/2), logoW, logoH);
+      afterTopLogo();
     };
-    topLogo.onerror = function(){
-      // fallback text
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 48px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('district', W/2, pad/2 + 80);
-      drawMain();
-    };
-    // compact top SVG (must match the one in the page)
+    topLogo.onerror = function(){ afterTopLogo(); };
     topLogo.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="420" height="90" viewBox="0 0 420 90"><defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="420" height="90" fill="none"/><text x="50%" y="60%" text-anchor="middle" font-family=\'Inter, Arial, sans-serif\' font-weight="800" font-size="46" fill=\'%23ffffff\' filter="url(%23g)">district</text></svg>';
 
-    function drawMain(){
-      // poster area
-      const posterW = 260, posterH = 380;
-      const px = pad + 40, py = pad + headerH + 40;
-      roundRect(ctx, px-8, py-8, posterW + 16, posterH + 16, 12, true, false); // background
+    function afterTopLogo(){
+      // compute poster/title/date area coordinates (below header)
+      const topY = cy + headerH + innerPad;
+      const posterW = Math.round(cardW * 0.18);
+      const posterH = Math.round(posterW * 1.45);
+      const posterX = cx + innerPad;
+      const posterY = topY + 6;
 
+      // draw poster background + image (if loaded)
+      roundRect(ctx, posterX - 6, posterY - 6, posterW + 12, posterH + 12, 10, true, false);
       if(posterDataUrl){
         const img = new Image();
+        img.crossOrigin = 'anonymous';
         img.onload = function(){
-          const ratio = Math.max(posterW / img.width, posterH / img.height);
-          const sw = posterW / ratio, sh = posterH / ratio;
-          const sx = (img.width - sw) / 2, sy = (img.height - sh) / 2;
-          ctx.drawImage(img, sx, sy, sw, sh, px, py, posterW, posterH);
-          drawRightAndPlaceholder();
+          // fit cover
+          const scale = Math.max(posterW / img.width, posterH / img.height);
+          const sw = Math.round(posterW / scale), sh = Math.round(posterH / scale);
+          const sx = Math.round((img.width - sw) / 2), sy = Math.round((img.height - sh) / 2);
+          ctx.drawImage(img, sx, sy, sw, sh, posterX, posterY, posterW, posterH);
+          afterPoster();
         };
-        img.onerror = function(){ // if poster fails, draw placeholder
+        img.onerror = function(){
+          // placeholder fill
           ctx.fillStyle = '#222';
-          roundRect(ctx, px, py, posterW, posterH, 10, true, false);
-          drawRightAndPlaceholder();
+          roundRect(ctx, posterX, posterY, posterW, posterH, 8, true, false);
+          ctx.fillStyle = '#666';
+          ctx.font = Math.round(cardW*0.03) + 'px Arial';
+          ctx.fillText('POSTER', posterX + 12, posterY + 36);
+          afterPoster();
         };
         img.src = posterDataUrl;
       } else {
-        // placeholder
-        const g = ctx.createLinearGradient(px,py,px+posterW,py+posterH);
-        g.addColorStop(0,'#2a2a2a'); g.addColorStop(1,'#111');
-        ctx.fillStyle = g; roundRect(ctx, px, py, posterW, posterH, 10, true, false);
-        ctx.fillStyle = '#777';
-        ctx.font = 'bold 22px Arial'; ctx.fillText('POSTER', px + 24, py + 40);
-        drawRightAndPlaceholder();
+        ctx.fillStyle = '#222';
+        roundRect(ctx, posterX, posterY, posterW, posterH, 8, true, false);
+        ctx.fillStyle = '#666';
+        ctx.font = Math.round(cardW*0.03) + 'px Arial';
+        ctx.fillText('POSTER', posterX + 12, posterY + 36);
+        afterPoster();
       }
-    }
 
-    function drawRightAndPlaceholder(){
-      const rx = pad + 320;
-      const rw = W - rx - pad;
-      // title
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 44px Arial';
-      wrapText(ctx, pvTitle.textContent, rx, pad + 200, rw - 40, 46);
+      function afterPoster(){
+        // Title and meta area to the right of poster
+        const titleX = posterX + posterW + Math.round(cardW*0.03);
+        const titleW = cx + cardW - innerPad - titleX;
+        // Title
+        ctx.fillStyle = '#fff';
+        ctx.font = '700 ' + Math.round(cardW*0.045) + 'px Arial';
+        wrapText(ctx, pvTitle.textContent, titleX, posterY + 8, titleW, Math.round(cardW*0.055));
 
-      // meta
-      ctx.fillStyle = '#bdbdbd';
-      ctx.font = '20px Arial';
-      ctx.fillText(pvMeta.textContent, rx, pad + 320);
+        // meta
+        ctx.fillStyle = '#bdbdbd';
+        ctx.font = Math.round(cardW*0.025) + 'px Arial';
+        ctx.fillText(pvMeta.textContent, titleX, posterY + Math.round(cardW*0.055) + 60);
 
-      // date/time
-      ctx.fillStyle = '#fff';
-      ctx.font = '28px Arial';
-      ctx.fillText(pvDate.textContent + '   |   ' + pvTime.textContent, rx, pad + 360);
-
-      // big white QR placeholder centered
-      const qsize = 420;
-      const qx = (W - qsize) / 2;
-      const qy = pad + 480;
-      ctx.fillStyle = '#ffffff';
-      roundRect(ctx, qx, qy, qsize, qsize, 34, true, false);
-
-      // screen & seat under placeholder
-      ctx.fillStyle = '#bdbdbd'; ctx.font = '18px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('SCREEN', W/2, qy + qsize + 60);
-      ctx.fillStyle = '#fff'; ctx.font = '22px Arial';
-      ctx.fillText(pvScreen.textContent, W/2, qy + qsize + 100);
-
-      ctx.fillStyle = '#bdbdbd'; ctx.font = '18px Arial';
-      ctx.fillText('SEAT', W/2, qy + qsize + 150);
-      ctx.fillStyle = '#fff'; ctx.font = '22px Arial';
-      ctx.fillText(pvSeats.textContent, W/2, qy + qsize + 190);
-
-      // perforation dashed line
-      const perY = qy + qsize + 240;
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-      ctx.lineWidth = 2;
-      dashedLine(ctx, pad + 30, perY, W - pad - 30, perY, 14, 12);
-
-      // address
-      ctx.fillStyle = '#d6d6d6'; ctx.font = '18px Arial';
-      wrapText(ctx, pvAddress.textContent, pad + 40, perY + 48, W - 2*(pad+40), 26);
-
-      // booking id
-      ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(pvBooking.textContent, W/2, H - pad - 160);
-
-      // bottom logo + hashtag (draw embedded bottom logo)
-      const bottomLogo = new Image();
-      bottomLogo.onload = function(){
-        const lw = 220, lh = Math.round(bottomLogo.height/bottomLogo.width*lw);
-        ctx.drawImage(bottomLogo, pad + 30, H - pad - lh - 20, lw, lh);
-        // hashtag
-        ctx.font = 'bold 42px Arial'; ctx.fillStyle = '#fff';
+        // date/time on far right
         ctx.textAlign = 'right';
-        ctx.fillText('#SeeYouThere', W - pad - 30, H - pad - 40);
-        // save
-        finish();
-      };
-      bottomLogo.onerror = function(){
-        // fallback text logo
-        ctx.font = 'bold 28px Arial'; ctx.fillStyle = '#fff';
-        ctx.textAlign = 'left';
-        ctx.fillText('district', pad + 30, H - pad - 40);
-        ctx.font = 'bold 42px Arial'; ctx.fillStyle = '#fff';
-        ctx.textAlign = 'right';
-        ctx.fillText('#SeeYouThere', W - pad - 30, H - pad - 40);
-        finish();
-      };
-      bottomLogo.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="520" height="120" viewBox="0 0 520 120"><rect width="100%" height="100%" fill="none"/><text x="10" y="46" font-family=\'Inter, Arial, sans-serif\' font-weight="800" font-size="42" fill=\'%23ffffff\'>district</text><text x="12" y="86" font-family=\'Inter, Arial, sans-serif\' font-weight="700" font-size="14" fill=\'%23ffffff\'>BY ZOMATO</text></svg>';
-    }
+        ctx.fillStyle = '#fff';
+        ctx.font = Math.round(cardW*0.03) + 'px Arial';
+        ctx.fillText(pvDate.textContent, cx + cardW - innerPad - 4, posterY + 22);
+        ctx.fillStyle = '#bdbdbd';
+        ctx.fillText(pvTime.textContent, cx + cardW - innerPad - 4, posterY + 54);
+        ctx.textAlign = 'start';
 
-    function finish(){
-      // trigger download
-      const data = off.toDataURL('image/png');
+        // big QR placeholder centered under title block
+        const qSize = Math.round(cardW * 0.42); // corresponds to ~220px when W~1000
+        const qX = cx + Math.round((cardW - qSize)/2);
+        const qY = posterY + posterH + Math.round(cardW*0.04);
+        ctx.fillStyle = '#ffffff';
+        roundRect(ctx, qX, qY, qSize, qSize, 20, true, false);
+
+        // SCREEN / SEAT / THEATRE
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#bdbdbd';
+        ctx.font = Math.round(cardW*0.022) + 'px Arial';
+        ctx.fillText('SCREEN', cx + cardW/2, qY + qSize + Math.round(cardW*0.07));
+        ctx.fillStyle = '#fff';
+        ctx.font = '700 ' + Math.round(cardW*0.03) + 'px Arial';
+        ctx.fillText(pvScreen.textContent, cx + cardW/2, qY + qSize + Math.round(cardW*0.115));
+
+        ctx.fillStyle = '#bdbdbd';
+        ctx.font = Math.round(cardW*0.022) + 'px Arial';
+        ctx.fillText('SEAT', cx + cardW/2, qY + qSize + Math.round(cardW*0.18));
+        ctx.fillStyle = '#fff';
+        ctx.font = '700 ' + Math.round(cardW*0.03) + 'px Arial';
+        ctx.fillText(pvSeats.textContent, cx + cardW/2, qY + qSize + Math.round(cardW*0.225));
+
+        // perforation line
+        const perY = qY + qSize + Math.round(cardW*0.27);
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        ctx.lineWidth = Math.max(1, Math.round(cardW*0.002));
+        dashedLine(ctx, cx + innerPad, perY, cx + cardW - innerPad, perY, Math.round(cardW*0.018), Math.round(cardW*0.012));
+
+        // address block
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#d6d6d6';
+        ctx.font = Math.round(cardW*0.02) + 'px Arial';
+        wrapText(ctx, pvAddress.textContent, cx + innerPad, perY + Math.round(cardW*0.04), cardW - innerPad*2, Math.round(cardW*0.03));
+
+        // booking id
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.font = Math.round(cardW*0.018) + 'px Arial';
+        ctx.fillText(pvBooking.textContent, cx + cardW/2, cy + cardH - innerPad - Math.round(cardW*0.14));
+
+        // bottom logo (use your uploaded PNG)
+        const bottomLogo = new Image();
+        bottomLogo.crossOrigin = 'anonymous';
+        bottomLogo.onload = function(){
+          const lw = Math.round(cardW*0.33);
+          const lh = Math.round(bottomLogo.height/bottomLogo.width * lw);
+          ctx.drawImage(bottomLogo, cx + innerPad, cy + cardH - innerPad - lh, lw, lh);
+          // hashtag on right
+          ctx.textAlign = 'right';
+          ctx.fillStyle = '#fff';
+          ctx.font = '700 ' + Math.round(cardW*0.05) + 'px Arial';
+          ctx.fillText('#SeeYouThere', cx + cardW - innerPad, cy + cardH - innerPad - Math.round(lh/3));
+          finalize();
+        };
+        bottomLogo.onerror = function(){
+          // fallback text
+          ctx.font = '700 ' + Math.round(cardW*0.04) + 'px Arial';
+          ctx.fillStyle = '#fff';
+          ctx.fillText('district', cx + innerPad, cy + cardH - innerPad - 30);
+          ctx.textAlign = 'right';
+          ctx.fillText('#SeeYouThere', cx + cardW - innerPad, cy + cardH - innerPad - 30);
+          finalize();
+        };
+        // use raw GitHub URL provided previously
+        bottomLogo.src = 'https://github.com/rahulchakradhar30/tickets/blob/main/brand-logo.png?raw=true';
+      } // end afterPoster
+    } // end afterTopLogo
+
+    function finalize(){
+      // create filename and download
       const a = document.createElement('a');
-      a.href = data;
-      a.download = (pvTitle.textContent || 'ticket') + '-ticket.png';
+      a.href = off.toDataURL('image/png');
+      a.download = filename || (pvTitle.textContent + '-ticket.png');
       a.click();
     }
 
-    // helpers
+    // helper drawing functions
     function roundRect(ctx,x,y,w,h,r,fill,stroke){
       if(typeof r==='undefined') r=6;
       ctx.beginPath();
@@ -558,22 +591,37 @@
     }
     function dashedLine(ctx, x1, y1, x2, y2, dash, gap){
       ctx.beginPath();
-      let x = x1, y = y1;
       const dx = x2 - x1, dy = y2 - y1;
       const dist = Math.sqrt(dx*dx + dy*dy);
-      const steps = Math.floor(dist / (dash + gap));
-      const vx = dx / dist * (dash + gap);
-      const vy = dy / dist * (dash + gap);
+      const seg = dash + gap;
+      const steps = Math.floor(dist / seg);
+      const vx = dx / dist * seg;
+      const vy = dy / dist * seg;
       for(let i=0;i<steps;i++){
-        ctx.moveTo(x + i*vx, y + i*vy);
-        ctx.lineTo(x + i*vx + (dx/dist)*dash, y + i*vy + (dy/dist)*dash);
+        const sx = x1 + i*vx;
+        const sy = y1 + i*vy;
+        const ex = sx + (dx/dist)*dash;
+        const ey = sy + (dy/dist)*dash;
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(ex, ey);
       }
       ctx.stroke();
+    }
+  } // end buildAndDownload
+
+  // UI download wrapper
+  window.downloadTicketFromUI = function(){
+    const mode = document.getElementById('exportMode').value;
+    if(mode === 'standard'){
+      // Standard: 1000 x 1600 (keeps proportions)
+      buildAndDownload(1000, 1600, (pvTitle.textContent || 'ticket') + '-standard.png');
+    } else {
+      // District original: 720 x 1280 (exact sample)
+      buildAndDownload(720, 1280, (pvTitle.textContent || 'ticket') + '-district.png');
     }
   };
 
 })();
 </script>
-
 </body>
 </html>
